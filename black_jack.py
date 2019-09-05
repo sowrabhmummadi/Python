@@ -1,5 +1,7 @@
 import random
 
+blackjack_limit = 21
+
 
 class Player:
 
@@ -85,42 +87,61 @@ class BlackJack:
     def start(self):
         # bet = input(f"please specify your bet(Balance:{self.player.get_bank_roll()}):")
         self.deal_initial_cards()
-        is_game_over = False
-
+        self.print_cards()
         # players turn
-        blackjack_limit = 21
+        is_game_over, player_hand_sum = self.players_turn()
+        if not is_game_over:
+            v, dealer_hand_sum = self.dealers_turn(player_hand_sum)
+            if not v:
+                self.provide_verdict(dealer_hand_sum, player_hand_sum)
+
+    def provide_verdict(self, dealer_hand_sum, player_hand_sum):
+        self.print_full_cards()
+        if dealer_hand_sum > blackjack_limit:
+            print("~$$$$ dealer bust ~$$$$")
+        elif player_hand_sum > dealer_hand_sum:
+            print("~$$$$ player won ~$$$$")
+        elif dealer_hand_sum > player_hand_sum:
+            print("~$$$$ players loose ~$$$$")
+        else:
+            print("~$$$$ Tied ~$$$$")
+
+    def dealers_turn(self, player_hand_sum):
+        is_game_over = False;
+        print("Dealers turn")
         while True:
-            player_hand_sum = self.player.get_hand_value()
-            if player_hand_sum > blackjack_limit:
-                self.print_cards()
-                print("~$$$$ player bust $$$$~")
-                is_game_over = True
+            dealer_hand_sum = self.dealer.get_hand_value()
+            if dealer_hand_sum > player_hand_sum or dealer_hand_sum > 17:
                 break
-            self.print_cards()
+            self.hit(self.dealer)
+        if dealer_hand_sum > blackjack_limit:
+            self.print_full_cards()
+            print("~$$$$ dealer bust ~$$$$")
+            is_game_over = True
+        return is_game_over, self.dealer.get_hand_value()
+
+    def players_turn(self):
+        is_game_over = False;
+        while True:
             print("1.Hit 2.Stand")
             option = input("Choose your option: ")
             if option == '1':
                 self.hit(self.player)
-            else:
+                player_hand_sum = self.player.get_hand_value()
+                if player_hand_sum > blackjack_limit:
+                    self.print_full_cards()
+                    print("~$$$$ player bust $$$$~")
+                    is_game_over = True
+                    break
+                else:
+                    self.print_cards()
+
+            elif option == '2':
                 print("player stands...")
                 break
-
-        if not is_game_over:
-            print("Dealers turn")
-            while True:
-                dealer_hand_sum = self.dealer.get_hand_value()
-                if dealer_hand_sum > player_hand_sum or dealer_hand_sum > 17:
-                    break
-                self.hit(self.dealer)
-            self.print_full_cards()
-            if dealer_hand_sum > blackjack_limit:
-                print("~$$$$ dealer bust ~$$$$")
-            elif player_hand_sum > dealer_hand_sum:
-                print("~$$$$ player won ~$$$$")
-            elif dealer_hand_sum > player_hand_sum:
-                print("~$$$$ players loose ~$$$$")
             else:
-                print("~$$$$ Tied ~$$$$")
+                print("please choose a valid option..")
+        return is_game_over, self.player.get_hand_value()
 
     def deal_initial_cards(self):
         self.player.add_card(self.deck.deal_card())
