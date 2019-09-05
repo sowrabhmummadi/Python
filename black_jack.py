@@ -37,7 +37,10 @@ class Card:
         self.name = name
 
     def print_card(self):
-        return f'{self.value} : {self.ctype} : {self.name}'
+        if self.name == "":
+            return print(f'{self.value} of {self.ctype}', end=", ")
+        else:
+            return print(f'{self.name} of {self.ctype}', end=", ")
 
     def get_value(self):
         return self.value
@@ -51,7 +54,7 @@ class Deck:
         self.shuffle_deck()
 
     def fill_cards(self):
-        for card_type in ['Heart', 'Diamond', 'Spade', 'Club']:
+        for card_type in ['Hearts', 'Diamonds', 'Spades', 'Clubs']:
             for card_value in range(2, 11):
                 self.cards.append(Card(card_type, card_value))
             for card_name in ['Jack', 'Queens', 'King']:
@@ -65,7 +68,7 @@ class Deck:
         for card in self.cards:
             card.print_card()
 
-    def get_card(self):
+    def deal_card(self):
         return self.cards.pop()
 
     def get_length(self):
@@ -81,16 +84,14 @@ class BlackJack:
 
     def start(self):
         # bet = input(f"please specify your bet(Balance:{self.player.get_bank_roll()}):")
-        self.player.add_card(self.deck.get_card())
-        self.dealer.add_card(self.deck.get_card())
-        self.player.add_card(self.deck.get_card())
-        self.dealer.add_card(self.deck.get_card())
+        self.deal_initial_cards()
         is_game_over = False
 
         # players turn
+        blackjack_limit = 21
         while True:
             player_hand_sum = self.player.get_hand_value()
-            if player_hand_sum > 21:
+            if player_hand_sum > blackjack_limit:
                 self.print_cards()
                 print("~$$$$ player bust $$$$~")
                 is_game_over = True
@@ -111,8 +112,8 @@ class BlackJack:
                 if dealer_hand_sum > player_hand_sum or dealer_hand_sum > 17:
                     break
                 self.hit(self.dealer)
-            self.print_cards()
-            if dealer_hand_sum > 21:
+            self.print_full_cards()
+            if dealer_hand_sum > blackjack_limit:
                 print("~$$$$ dealer bust ~$$$$")
             elif player_hand_sum > dealer_hand_sum:
                 print("~$$$$ player won ~$$$$")
@@ -121,19 +122,38 @@ class BlackJack:
             else:
                 print("~$$$$ Tied ~$$$$")
 
+    def deal_initial_cards(self):
+        self.player.add_card(self.deck.deal_card())
+        self.dealer.add_card(self.deck.deal_card())
+        self.player.add_card(self.deck.deal_card())
+        self.dealer.add_card(self.deck.deal_card())
+
     def print_cards(self):
-        for p in [self.player, self.dealer]:
-            if p.is_dealers():
-                print(f'Dealers cards(sum: {p.get_hand_value()}): ', end="")
-            else:
-                print(f'players cards(sum: {p.get_hand_value()}): ', end="")
-            for card in p.get_cards():
-                print(f'{card.print_card()} |', end="")
-            print('')
+        print(f'{self.player.get_name()} cards(sum: {self.player.get_hand_value()}): ', end="")
+        for card in self.player.get_cards():
+            card.print_card()
+        print('')
+
+        first_card = self.dealer.get_cards()[0]
+        print(f'{self.dealer.get_name()} cards(sum: {first_card.get_value()}+): ', end="")
+        first_card.print_card()
+        for _ in self.dealer.get_cards()[1::]:
+            print('-------', end=", ")
+        print('')
+
+    def print_card(self, player):
+        print(f'{player.get_name()} cards(sum: {player.get_hand_value()}): ', end="")
+        for card in player.get_cards():
+            card.print_card()
+        print('')
 
     def hit(self, player):
         print(f"{player.get_name()} choose to Hit")
-        player.add_card(self.deck.get_card())
+        player.add_card(self.deck.deal_card())
+
+    def print_full_cards(self):
+        self.print_card(self.player)
+        self.print_card(self.dealer)
 
     def stand(self, player):
         print(f"{player.get_name()} choose to Stand")
