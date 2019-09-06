@@ -13,23 +13,42 @@ class Player:
     def add_card(self, card):
         self.cards.append(card)
 
-    def get_cards(self):
-        return self.cards
-
-    def is_dealers(self):
-        return self.is_dealer
-
-    def get_bank_roll(self):
-        return self.bankroll
-
-    def get_name(self):
+    def __str__(self):
         if self.is_dealer:
             return "Dealer"
         else:
             return "Player"
 
     def get_hand_value(self):
-        return sum(map(lambda x: x.get_value(), self.cards))
+        non_ace_cards = list(filter(lambda card: card.get_name() != 'Ace', self.cards))
+        no_of_non_ace_cards = len(self.cards) - len(non_ace_cards)
+        sum_of_cards = sum(map(lambda x: x.get_value(), non_ace_cards))
+        while no_of_non_ace_cards > 0:
+            if sum_of_cards + 10 < 21:
+                sum_of_cards += 10
+            else:
+                sum_of_cards += 1
+            no_of_non_ace_cards -= 1
+        return sum_of_cards
+
+    def print_cards(self):
+        if (self.is_dealer):
+            first_card = self.cards[0]
+            print(f'{self} cards(sum: {first_card.get_value()}+): ', end="")
+            first_card.print_card()
+            for _ in self.cards[1::]:
+                print('-------', end=", ")
+        else:
+            print(f'{self} cards(sum: {self.get_hand_value()}): ', end="")
+            for card in self.cards:
+                card.print_card()
+        print('')
+
+    def print_full_cards(self):
+        print(f'{self} cards(sum: {self.get_hand_value()}): ', end="")
+        for card in self.cards:
+            card.print_card()
+        print('')
 
 
 class Card:
@@ -46,6 +65,9 @@ class Card:
 
     def get_value(self):
         return self.value
+
+    def get_name(self):
+        return self.name
 
 
 class Deck:
@@ -87,7 +109,9 @@ class BlackJack:
     def start(self):
         # bet = input(f"please specify your bet(Balance:{self.player.get_bank_roll()}):")
         self.deal_initial_cards()
-        self.print_cards()
+
+        self.player.print_cards()
+        self.dealer.print_cards()
         # players turn
         is_game_over, player_hand_sum = self.players_turn()
         if not is_game_over:
@@ -107,7 +131,7 @@ class BlackJack:
             print("~$$$$ Tied $$$$~")
 
     def dealers_turn(self, player_hand_sum):
-        is_game_over = False;
+        is_game_over = False
         print("Dealers turn")
         while True:
             dealer_hand_sum = self.dealer.get_hand_value()
@@ -121,7 +145,7 @@ class BlackJack:
         return is_game_over, self.dealer.get_hand_value()
 
     def players_turn(self):
-        is_game_over = False;
+        is_game_over = False
         while True:
             print("1.Hit 2.Stand")
             option = input("Choose your option: ")
@@ -134,7 +158,7 @@ class BlackJack:
                     is_game_over = True
                     break
                 else:
-                    self.print_cards()
+                    self.player.print_cards()
 
             elif option == '2':
                 print("player stands...")
@@ -149,35 +173,16 @@ class BlackJack:
         self.player.add_card(self.deck.deal_card())
         self.dealer.add_card(self.deck.deal_card())
 
-    def print_cards(self):
-        print(f'{self.player.get_name()} cards(sum: {self.player.get_hand_value()}): ', end="")
-        for card in self.player.get_cards():
-            card.print_card()
-        print('')
-
-        first_card = self.dealer.get_cards()[0]
-        print(f'{self.dealer.get_name()} cards(sum: {first_card.get_value()}+): ', end="")
-        first_card.print_card()
-        for _ in self.dealer.get_cards()[1::]:
-            print('-------', end=", ")
-        print('')
-
-    def print_card(self, player):
-        print(f'{player.get_name()} cards(sum: {player.get_hand_value()}): ', end="")
-        for card in player.get_cards():
-            card.print_card()
-        print('')
-
     def hit(self, player):
-        print(f"{player.get_name()} choose to Hit")
+        print(f"{player} choose to Hit")
         player.add_card(self.deck.deal_card())
 
     def print_full_cards(self):
-        self.print_card(self.player)
-        self.print_card(self.dealer)
+        self.player.print_full_cards()
+        self.dealer.print_full_cards()
 
     def stand(self, player):
-        print(f"{player.get_name()} choose to Stand")
+        print(f"{player} choose to Stand")
 
 
 BlackJack().start()
