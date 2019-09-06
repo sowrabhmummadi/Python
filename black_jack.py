@@ -1,3 +1,4 @@
+import os
 import random
 
 blackjack_limit = 21
@@ -105,6 +106,7 @@ class BlackJack:
         self.player = Player(100)
         self.dealer = Player(100, True)
         self.deck = Deck()
+        self.print_template = PrintTemplate()
 
     def start_game(self):
         # bet = input(f"please specify your bet(Balance:{self.player.get_bank_roll()}):")
@@ -113,46 +115,50 @@ class BlackJack:
         self.player.print_cards()
         self.dealer.print_cards()
         # players turn
+        self.print_template.set_print_fun(self.print_full_cards)
+        self.print_template.set_turn("players turn")
         is_game_over, player_hand_sum = self.players_turn()
         if not is_game_over:
+            self.print_template.set_turn("Dealer turn")
             is_game_over, dealer_hand_sum = self.dealers_turn(player_hand_sum)
         if not is_game_over:
             self.provide_verdict(dealer_hand_sum, player_hand_sum)
 
     def provide_verdict(self, dealer_hand_sum, player_hand_sum):
-        self.print_full_cards()
+        ##self.print_full_cards()
         if player_hand_sum > dealer_hand_sum:
-            print("~$$$$ player won $$$$~")
+            self.print_template.set_verdict("~$$$$ player won $$$$~")
         elif dealer_hand_sum > player_hand_sum:
-            print("~$$$$ players loose $$$$~")
+            self.print_template.set_verdict("~$$$$ players loose $$$$~")
         else:
-            print("~$$$$ Tied $$$$~")
+            self.print_template.set_verdict("~$$$$ Tied $$$$~")
 
     def dealers_turn(self, player_hand_sum):
         is_game_over = False
-        print("Dealers turn")
+        self.print_template.set_turn("Dealers turn")
+        self.print_template.set_Status("")
         while True:
             dealer_hand_sum = self.dealer.get_hand_value()
             if dealer_hand_sum > player_hand_sum or dealer_hand_sum > 17:
                 break
             self.hit(self.dealer)
         if dealer_hand_sum > blackjack_limit:
-            self.print_full_cards()
-            print("~$$$$ dealer bust ~$$$$")
+            ##self.print_full_cards()
+            self.print_template.set_verdict("~$$$$ dealer bust ~$$$$");
             is_game_over = True
         return is_game_over, self.dealer.get_hand_value()
 
     def players_turn(self):
         is_game_over = False
         while True:
-            print("1.Hit 2.Stand")
-            option = input("Choose your option: ")
+            option = self.print_template.set_input("1.Hit 2.Stand")
+
             if option == '1':
                 self.hit(self.player)
                 player_hand_sum = self.player.get_hand_value()
                 if player_hand_sum > blackjack_limit:
-                    self.print_full_cards()
-                    print("~$$$$ player bust $$$$~")
+                    ## self.print_full_cards()
+                    self.print_template.set_verdict("1.Hit 2.Stand")("~$$$$ player bust $$$$~")
                     is_game_over = True
                     break
                 else:
@@ -160,10 +166,10 @@ class BlackJack:
                     self.dealer.print_cards()
 
             elif option == '2':
-                print("player stands...")
+                self.print_template.set_Status(f"{self.player} choose to Stand")
                 break
             else:
-                print("please choose a valid option..")
+                self.print_template.set_Status("please choose a valid option..")
         return is_game_over, self.player.get_hand_value()
 
     def deal_initial_cards(self):
@@ -173,27 +179,69 @@ class BlackJack:
         self.dealer.add_card(self.deck.deal_card())
 
     def hit(self, player):
-        print(f"{player} choose to Hit")
         player.add_card(self.deck.deal_card())
+        self.print_template.set_Status(f"{player} choose to Hit")
 
     def print_full_cards(self):
         self.player.print_full_cards()
         self.dealer.print_full_cards()
 
     def stand(self, player):
-        print(f"{player} choose to Stand")
+        self.print_template.set_Status(f"{player} choose to Stand")
 
 
 def start_game():
     print("welcome to simplified Black jack")
+    BlackJack().start_game()
     while True:
-        BlackJack().start_game()
         user_input = input("\n Do you want to play another game (y)")
         if user_input.lower() == 'y':
             BlackJack().start_game()
         else:
             print("Thank you for your time")
             break
+
+
+class PrintTemplate:
+
+    def __init__(self):
+        self.turn = ""
+        self.status = ""
+        self.fun = None
+        self.inpt = None
+        self.verdict = None
+
+    def update_print(self):
+        os.system('cls||clear')
+        print(f'Turn: {self.turn}')
+        print(f'Status: {self.status}')
+        self.fun()
+        if self.verdict != None:
+            print(f'Verdict: {self.verdict}')
+        elif self.inpt != None:
+            user_input = input(f'choose your option ({self.inpt}): ')
+            self.inpt = None
+            return user_input
+
+    def set_turn(self, turn):
+        self.turn = turn
+        self.update_print()
+
+    def set_Status(self, status):
+        self.status = status
+        self.update_print()
+
+    def set_print_fun(self, fun):
+        self.fun = fun
+        self.update_print()
+
+    def set_input(self, inpt):
+        self.inpt = inpt
+        return self.update_print()
+
+    def set_verdict(self, verdict):
+        self.verdict = verdict
+        return self.update_print()
 
 
 start_game()
