@@ -32,7 +32,7 @@ class Player:
         return sum_of_cards
 
     def print_cards(self):
-        if (self.is_dealer):
+        if self.is_dealer:
             first_card = self.cards[0]
             print(f'{self} cards(sum: {first_card.get_value()}+): ', end="")
             first_card.print_card()
@@ -106,7 +106,7 @@ class BlackJack:
         self.dealer = Player(100, True)
         self.deck = Deck()
 
-    def start(self):
+    def start_game(self):
         # bet = input(f"please specify your bet(Balance:{self.player.get_bank_roll()}):")
         self.deal_initial_cards()
 
@@ -115,15 +115,13 @@ class BlackJack:
         # players turn
         is_game_over, player_hand_sum = self.players_turn()
         if not is_game_over:
-            v, dealer_hand_sum = self.dealers_turn(player_hand_sum)
-            if not v:
-                self.provide_verdict(dealer_hand_sum, player_hand_sum)
+            is_game_over, dealer_hand_sum = self.dealers_turn(player_hand_sum)
+        if not is_game_over:
+            self.provide_verdict(dealer_hand_sum, player_hand_sum)
 
     def provide_verdict(self, dealer_hand_sum, player_hand_sum):
         self.print_full_cards()
-        if dealer_hand_sum > blackjack_limit:
-            print("~$$$$ dealer bust $$$$~")
-        elif player_hand_sum > dealer_hand_sum:
+        if player_hand_sum > dealer_hand_sum:
             print("~$$$$ player won $$$$~")
         elif dealer_hand_sum > player_hand_sum:
             print("~$$$$ players loose $$$$~")
@@ -159,6 +157,7 @@ class BlackJack:
                     break
                 else:
                     self.player.print_cards()
+                    self.dealer.print_cards()
 
             elif option == '2':
                 print("player stands...")
@@ -185,4 +184,16 @@ class BlackJack:
         print(f"{player} choose to Stand")
 
 
-BlackJack().start()
+def start_game():
+    print("welcome to simplified Black jack")
+    while True:
+        BlackJack().start_game()
+        user_input = input("\n Do you want to play another game (y)")
+        if user_input.lower() == 'y':
+            BlackJack().start_game()
+        else:
+            print("Thank you for your time")
+            break
+
+
+start_game()
