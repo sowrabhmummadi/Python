@@ -61,7 +61,7 @@ class Deck:
                 self.cards.append(Card(card_type, card_value))
             for card_name in ['Jack', 'Queens', 'King']:
                 self.cards.append(Card(card_type, 10, card_name))
-            # self.cards.append(Card(card_type, 1, 'Ace'))
+            self.cards.append(Card(card_type, 1, 'Ace'))
 
     def shuffle_deck(self):
         random.shuffle(self.cards)
@@ -98,13 +98,13 @@ class BlackJack:
     def provide_verdict(self, dealer_hand_sum, player_hand_sum):
         self.print_full_cards()
         if dealer_hand_sum > blackjack_limit:
-            print("~$$$$ dealer bust ~$$$$")
+            print("~$$$$ dealer bust $$$$~")
         elif player_hand_sum > dealer_hand_sum:
-            print("~$$$$ player won ~$$$$")
+            print("~$$$$ player won $$$$~")
         elif dealer_hand_sum > player_hand_sum:
-            print("~$$$$ players loose ~$$$$")
+            print("~$$$$ players loose $$$$~")
         else:
-            print("~$$$$ Tied ~$$$$")
+            print("~$$$$ Tied $$$$~")
 
     def dealers_turn(self, player_hand_sum):
         is_game_over = False;
